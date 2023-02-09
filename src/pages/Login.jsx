@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Header from '../components/Header';
+import getToken from '../services/getTokenAPI';
 
 class Login extends Component {
   state = {
@@ -22,6 +23,13 @@ class Login extends Component {
 
   handleChange = ({ target: { name, value } }) => {
     this.setState({ [name]: value }, this.verifyFields);
+  };
+
+  handleSubmit = async () => {
+    const { history } = this.props;
+    const token = await getToken();
+    localStorage.setItem('token', token);
+    history.push('/game');
   };
 
   render() {
@@ -56,7 +64,7 @@ class Login extends Component {
             type="button"
             data-testid="btn-play"
             disabled={ disabled }
-            onChange={ this.handleSubmit }
+            onClick={ this.handleSubmit }
           >
             Play
           </button>
@@ -66,10 +74,11 @@ class Login extends Component {
   }
 }
 
-Header.propTypes = {
+Login.propTypes = {
   name: PropTypes.string,
   email: PropTypes.string,
   disabled: PropTypes.bool,
+  history: PropTypes.shape({ push: PropTypes.func.isRequired }),
 }
   .isRequired;
 
