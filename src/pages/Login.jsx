@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
+// import { Link } from 'react-router-dom';
 import getToken from '../services/getTokenAPI';
 import { user } from '../redux/actions';
 import logo from '../trivia.png';
@@ -30,15 +30,15 @@ class Login extends Component {
 
   handleSubmit = async () => {
     const { name, email } = this.state;
-    const { dispatch } = this.props;
+    const { dispatch, history } = this.props;
     const token = await getToken();
     localStorage.setItem('token', token);
     dispatch(user({ name, email }));
-    // history.push('/game');
+    history.push('/game');
   };
 
   render() {
-    // const { history } = this.props;
+    const { history } = this.props;
     const { disabled, name, email } = this.state;
     return (
       <>
@@ -68,24 +68,21 @@ class Login extends Component {
               placeholder="Digite seu email"
             />
           </label>
-          <Link to="/game">
-            <button
-              type="button"
-              data-testid="btn-play"
-              disabled={ disabled }
-              onClick={ this.handleSubmit }
-            >
-              Play
-            </button>
-          </Link>
-          <Link to="/settings">
-            <button
-              type="button"
-              data-testid="btn-settings"
-            >
-              Configurações
-            </button>
-          </Link>
+          <button
+            type="button"
+            data-testid="btn-play"
+            disabled={ disabled }
+            onClick={ this.handleSubmit }
+          >
+            Play
+          </button>
+          <button
+            type="button"
+            data-testid="btn-settings"
+            onClick={ () => history.push('/settings') }
+          >
+            Configurações
+          </button>
         </div>
       </>
     );
