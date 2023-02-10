@@ -1,5 +1,5 @@
 import renderWithRouterAndRedux from './helpers/renderWithRouterAndRedux';
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import Login from '../pages/Login';
 import App from '../App';
@@ -27,7 +27,7 @@ describe('Verifica presença de todos os elementos e funcionalidades da página 
     expect(pathname).toBe('/settings');
 });
 
-  it('Verifica se o botão fica habilitado quando digita nome e email', () => {
+  it('Verifica se o botão fica habilitado quando digita nome e email', async () => {
     const mockFetch = {
       response_code: 0,
       response_message: "Token Generated Successfully!",
@@ -49,8 +49,10 @@ describe('Verifica presença de todos os elementos e funcionalidades da página 
     expect(buttonInput).not.toBeDisabled();
     userEvent.click(buttonInput);
     expect(global.fetch).toHaveBeenCalledWith('https://opentdb.com/api_token.php?command=request');
-    const { pathname } = history.location;
-    expect(pathname).toBe('/game');
+    await waitFor(() => {
+      const { pathname } = history.location;
+      expect(pathname).toBe('/game')
+    });
     
   //   const playerName = screen.getByTestId('header-player-name');
   //   expect(playerName).toBeInTheDocument();
