@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import Header from '../components/Header';
+import { Link } from 'react-router-dom';
 import getToken from '../services/getTokenAPI';
 import { user } from '../redux/actions';
+import logo from '../trivia.png';
 
 class Login extends Component {
   state = {
@@ -29,19 +30,21 @@ class Login extends Component {
 
   handleSubmit = async () => {
     const { name, email } = this.state;
-    const { dispatch, history } = this.props;
+    const { dispatch } = this.props;
     const token = await getToken();
     localStorage.setItem('token', token);
     dispatch(user({ name, email }));
-    history.push('/game');
+    // history.push('/game');
   };
 
   render() {
-    const { history } = this.props;
+    // const { history } = this.props;
     const { disabled, name, email } = this.state;
     return (
       <>
-        <Header />
+        <header>
+          <img src={ logo } className="App-logo" alt="logo" height="15vmin" />
+        </header>
         <div>
           <label htmlFor="playerName">
             <input
@@ -65,21 +68,24 @@ class Login extends Component {
               placeholder="Digite seu email"
             />
           </label>
-          <button
-            type="button"
-            data-testid="btn-play"
-            disabled={ disabled }
-            onClick={ this.handleSubmit }
-          >
-            Play
-          </button>
-          <button
-            type="button"
-            data-testid="btn-settings"
-            onClick={ () => history.push('./settings') }
-          >
-            Configurações
-          </button>
+          <Link to="/game">
+            <button
+              type="button"
+              data-testid="btn-play"
+              disabled={ disabled }
+              onClick={ this.handleSubmit }
+            >
+              Play
+            </button>
+          </Link>
+          <Link to="/settings">
+            <button
+              type="button"
+              data-testid="btn-settings"
+            >
+              Configurações
+            </button>
+          </Link>
         </div>
       </>
     );
