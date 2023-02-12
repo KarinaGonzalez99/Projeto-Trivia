@@ -79,6 +79,18 @@ class Game extends Component {
     return `wrong-answer-${index}`;
   };
 
+  handleNext = () => {
+    const { history } = this.props;
+    const { questionIndex } = this.state;
+    const MAX_QUESTIONS = 4;
+    if (questionIndex < MAX_QUESTIONS) {
+      this.setState((prevState) => (
+        { questionIndex: prevState.questionIndex + 1 }), this.storeAnswers);
+    } else {
+      history.push('/feedback');
+    }
+  };
+
   render() {
     const { questions, questionIndex, answers } = this.state;
     if (questions.length === 0) return <p>loading...</p>;
@@ -101,6 +113,13 @@ class Game extends Component {
               { answer }
             </button>))}
         </div>
+        <button
+          type="button"
+          onClick={ this.handleNext }
+          data-testid="btn-next"
+        >
+          Next
+        </button>
       </div>
     );
   }
