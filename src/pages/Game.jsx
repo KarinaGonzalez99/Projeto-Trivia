@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import Header from '../components/Header';
 import './Game.css';
+import { score } from '../redux/actions';
 // import getQuestion from '../services/getTokenAPI';
 
 class Game extends Component {
@@ -14,15 +15,14 @@ class Game extends Component {
     counterTimer: 30,
     isDisabled: false,
     nextDisable: true,
+    novaStore: 0,
   };
 
   async componentDidMount() {
     const { history } = this.props;
     const token = localStorage.getItem('token');
-    console.log(token);
     const response = await fetch(`https://opentdb.com/api.php?amount=5&token=${token}`);
     const data = await response.json();
-    console.log(data.results);
     const invalidTokenCode = 3;
     if (data.response_code === invalidTokenCode) {
       console.log('invalido');
@@ -106,12 +106,44 @@ class Game extends Component {
     }
   };
 
-  handleColor = () => {
+  scoreSum = (answer) => {
+    const { counterTimer, questions, questionIndex } = this.state;
+    const { dispatch } = this.props;
+    const basePoint = 10;
+    let finalScore = 0;
+    const easy = 1;
+    const medium = 2;
+    const hard = 3;
+    const questionDifficulty = questions[questionIndex].difficulty;
+    console.log(questionDifficulty);
+    let dificuldade = '';
+    if (questionDifficulty === 'easy') {
+      dificuldade = easy;
+    } else if (questionDifficulty === 'medium') {
+      dificuldade = medium;
+    } else dificuldade = hard;
+    console.log(dificuldade);
+    console.log(questions[questionIndex].correct_answer);
+    console.log(answer === questions[questionIndex].correct_answer);
+    if (answer === questions[questionIndex].correct_answer) {
+      finalScore = basePoint + (dificuldade * counterTimer);
+      console.log(finalScore);
+      this.setState((prevState) => ({
+        novaStore: prevState.novaStore + finalScore,
+      }), () => {
+        const { novaStore } = this.state;
+        dispatch(score(novaStore));
+      });
+    }
+  };
+
+  handleColor = (answer) => {
     this.setState({
       isClicked: true,
       nextDisable: false,
     });
     clearInterval(this.intervalID);
+    this.scoreSum(answer);
   };
 
   timer = () => {
@@ -149,8 +181,7 @@ class Game extends Component {
             <button
               data-testid={ this.isCorrect(answer) }
               key={ index }
-              onClick={ this.handleColor }
-              // style={ { backgroundColor: isClicked ? none : this.isCorrect(answer) } }
+              onClick={ () => this.handleColor(answer) }
               className={ isClicked ? this.isCorrect(answer) : 'none' }
               disabled={ isDisabled }
             >
@@ -177,6 +208,7 @@ class Game extends Component {
 
 Game.propTypes = {
   history: PropTypes.shape({ push: PropTypes.func }).isRequired,
+  dispatch: PropTypes.func.isRequired,
   // questionIndex: PropTypes.number.isRequired,
   // questions: PropTypes.arrayOf.isRequired,
 };
