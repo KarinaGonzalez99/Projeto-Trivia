@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import Header from '../components/Header';
+import './Game.css';
 // import getQuestion from '../services/getTokenAPI';
 
 class Game extends Component {
@@ -9,6 +10,7 @@ class Game extends Component {
     questions: [],
     answers: [],
     questionIndex: 0,
+    isClicked: false,
   };
 
   async componentDidMount() {
@@ -84,6 +86,7 @@ class Game extends Component {
     const { questionIndex } = this.state;
     const MAX_QUESTIONS = 4;
     if (questionIndex < MAX_QUESTIONS) {
+      this.setState({ isClicked: false });
       this.setState((prevState) => (
         { questionIndex: prevState.questionIndex + 1 }), this.storeAnswers);
     } else {
@@ -91,8 +94,12 @@ class Game extends Component {
     }
   };
 
+  handleColor = () => {
+    this.setState({ isClicked: true });
+  };
+
   render() {
-    const { questions, questionIndex, answers } = this.state;
+    const { questions, questionIndex, answers, isClicked } = this.state;
     if (questions.length === 0) return <p>loading...</p>;
     return (
       <div>
@@ -109,6 +116,9 @@ class Game extends Component {
             <button
               data-testid={ this.isCorrect(answer) }
               key={ index }
+              onClick={ this.handleColor }
+              // style={ { backgroundColor: isClicked ? none : this.isCorrect(answer) } }
+              className={ isClicked ? this.isCorrect(answer) : 'none' }
             >
               { answer }
             </button>))}
