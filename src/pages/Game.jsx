@@ -11,6 +11,9 @@ class Game extends Component {
     answers: [],
     questionIndex: 0,
     isClicked: false,
+    counterTimer: 30,
+    isDisabled: false,
+    nextDisable: true,
   };
 
   async componentDidMount() {
@@ -28,6 +31,9 @@ class Game extends Component {
     } else {
       this.setState({ questions: data.results }, this.storeAnswers);
     }
+
+    const interval = 1000;
+    this.intervalID = setInterval(() => this.timer(), interval);
   }
 
   storeAnswers = () => {
@@ -86,7 +92,13 @@ class Game extends Component {
     const { questionIndex } = this.state;
     const MAX_QUESTIONS = 4;
     if (questionIndex < MAX_QUESTIONS) {
-      this.setState({ isClicked: false });
+      this.setState({
+        isClicked: false,
+        counterTimer: 30,
+        isDisabled: false,
+      });
+      const interval = 1000;
+      this.intervalID = setInterval(() => this.timer(), interval);
       this.setState((prevState) => (
         { questionIndex: prevState.questionIndex + 1 }), this.storeAnswers);
     } else {
@@ -95,16 +107,37 @@ class Game extends Component {
   };
 
   handleColor = () => {
-    this.setState({ isClicked: true });
+    this.setState({
+      isClicked: true,
+      nextDisable: false,
+    });
+    clearInterval(this.intervalID);
+  };
+
+  timer = () => {
+    const { counterTimer } = this.state;
+    const ZERO = 0;
+    let intervalID;
+    if (counterTimer > ZERO) {
+      this.setState({ counterTimer: counterTimer - 1 });
+    } else {
+      this.setState({
+        isDisabled: true,
+        nextDisable: false,
+      });
+      clearInterval(intervalID);
+    }
   };
 
   render() {
-    const { questions, questionIndex, answers, isClicked } = this.state;
+    const { questions, questionIndex,
+      answers, isClicked, counterTimer, isDisabled, nextDisable } = this.state;
     if (questions.length === 0) return <p>loading...</p>;
     return (
       <div>
         <Header />
         <h1>Game</h1>
+        <p>{ counterTimer }</p>
         <p data-testid="question-category">
           { questions[questionIndex].category }
         </p>
@@ -119,17 +152,24 @@ class Game extends Component {
               onClick={ this.handleColor }
               // style={ { backgroundColor: isClicked ? none : this.isCorrect(answer) } }
               className={ isClicked ? this.isCorrect(answer) : 'none' }
+              disabled={ isDisabled }
             >
               { answer }
             </button>))}
         </div>
-        <button
-          type="button"
-          onClick={ this.handleNext }
-          data-testid="btn-next"
-        >
-          Next
-        </button>
+        {
+          nextDisable
+            ? null
+            : (
+              <button
+                type="button"
+                onClick={ this.handleNext }
+                data-testid="btn-next"
+              >
+                Next
+              </button>
+            )
+        }
       </div>
     );
   }
