@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import sanitizeHtml from 'sanitize-html';
+import md5 from 'crypto-js/md5';
 import Header from '../components/Header';
 import './Game.css';
 import { score, assertions } from '../redux/actions';
@@ -89,6 +90,20 @@ class Game extends Component {
     return `wrong-answer-${index}`;
   };
 
+  saveToRanking = () => {
+    const { name, gravatarEmail } = this.props;
+    const { playerScore } = this.state;
+    const emailGravatar = md5(gravatarEmail).toString();
+    const src = `https://www.gravatar.com/avatar/${emailGravatar}`;
+    const ranking = { name, score: playerScore, picture: src };
+    if (!JSON.parse(localStorage.getItem('ranking'))) {
+      localStorage.setItem('ranking', JSON.stringify([ranking]));
+    } else {
+      const storedRanking = JSON.parse(localStorage.getItem('ranking'));
+      localStorage.setItem('ranking', JSON.stringify([...storedRanking, ranking]));
+    }
+  };
+
   handleNext = () => {
     const { history } = this.props;
     const { questionIndex } = this.state;
@@ -104,6 +119,8 @@ class Game extends Component {
       this.setState((prevState) => (
         { questionIndex: prevState.questionIndex + 1 }), this.storeAnswers);
     } else {
+      // executa função para salvar os pontos no LS
+      this.saveToRanking();
       history.push('/feedback');
     }
   };
@@ -214,9 +231,17 @@ class Game extends Component {
   }
 }
 
+const mapStateToProps = (state) => {
+  const { player } = state;
+  const { name, gravatarEmail } = player;
+  return { name, gravatarEmail };
+};
+
 Game.propTypes = {
   history: PropTypes.shape({ push: PropTypes.func }).isRequired,
   dispatch: PropTypes.func.isRequired,
+  name: PropTypes.string.isRequired,
+  gravatarEmail: PropTypes.string.isRequired,
 };
 
-export default connect()(Game);
+export default connect(mapStateToProps)(Game);
