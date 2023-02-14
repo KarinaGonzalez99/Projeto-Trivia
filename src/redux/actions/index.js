@@ -1,5 +1,6 @@
 export const USER = 'USER';
 export const SCORE = 'SCORE';
+export const ASSERTIONS = 'ASSERTIONS';
 
 export const user = (payload) => ({
   type: USER,
@@ -8,5 +9,10 @@ export const user = (payload) => ({
 
 export const score = (payload) => ({
   type: SCORE,
+  payload,
+});
+
+export const assertions = (payload) => ({
+  type: ASSERTIONS,
   payload,
 });

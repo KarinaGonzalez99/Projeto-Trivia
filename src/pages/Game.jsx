@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import sanitizeHtml from 'sanitize-html';
 import Header from '../components/Header';
 import './Game.css';
-import { score } from '../redux/actions';
+import { score, assertions } from '../redux/actions';
 // import getQuestion from '../services/getTokenAPI';
 
 class Game extends Component {
@@ -15,7 +16,8 @@ class Game extends Component {
     counterTimer: 30,
     isDisabled: false,
     nextDisable: true,
-    novaStore: 0,
+    playerScore: 0,
+    playerAssertions: 0,
   };
 
   async componentDidMount() {
@@ -115,24 +117,21 @@ class Game extends Component {
     const medium = 2;
     const hard = 3;
     const questionDifficulty = questions[questionIndex].difficulty;
-    console.log(questionDifficulty);
     let dificuldade = '';
     if (questionDifficulty === 'easy') {
       dificuldade = easy;
     } else if (questionDifficulty === 'medium') {
       dificuldade = medium;
     } else dificuldade = hard;
-    console.log(dificuldade);
-    console.log(questions[questionIndex].correct_answer);
-    console.log(answer === questions[questionIndex].correct_answer);
     if (answer === questions[questionIndex].correct_answer) {
       finalScore = basePoint + (dificuldade * counterTimer);
-      console.log(finalScore);
       this.setState((prevState) => ({
-        novaStore: prevState.novaStore + finalScore,
+        playerScore: prevState.playerScore + finalScore,
+        playerAssertions: prevState.playerAssertions + 1,
       }), () => {
-        const { novaStore } = this.state;
-        dispatch(score(novaStore));
+        const { playerScore, playerAssertions } = this.state;
+        dispatch(score(playerScore));
+        dispatch(assertions(playerAssertions));
       });
     }
   };
@@ -165,6 +164,7 @@ class Game extends Component {
     const { questions, questionIndex,
       answers, isClicked, counterTimer, isDisabled, nextDisable } = this.state;
     if (questions.length === 0) return <p>loading...</p>;
+    const clean = sanitizeHtml(questions[questionIndex].question);
     return (
       <div>
         <Header />
@@ -173,20 +173,28 @@ class Game extends Component {
         <p data-testid="question-category">
           { questions[questionIndex].category }
         </p>
-        <p data-testid="question-text">
-          { questions[questionIndex].question }
+        <p
+          data-testid="question-text"
+        >
+          { clean }
+          {/* { questions[questionIndex].question } */}
         </p>
         <div data-testid="answer-options">
-          {answers.map((answer, index) => (
-            <button
-              data-testid={ this.isCorrect(answer) }
-              key={ index }
-              onClick={ () => this.handleColor(answer) }
-              className={ isClicked ? this.isCorrect(answer) : 'none' }
-              disabled={ isDisabled }
-            >
-              { answer }
-            </button>))}
+          {answers.map((answer, index) => {
+            const cleanAnswer = sanitizeHtml(answer);
+
+            return (
+              <button
+                data-testid={ this.isCorrect(answer) }
+                key={ index }
+                onClick={ () => this.handleColor(answer) }
+                className={ isClicked ? this.isCorrect(answer) : 'none' }
+                disabled={ isDisabled }
+              >
+                { cleanAnswer }
+              </button>
+            );
+          })}
         </div>
         {
           nextDisable
@@ -209,8 +217,6 @@ class Game extends Component {
 Game.propTypes = {
   history: PropTypes.shape({ push: PropTypes.func }).isRequired,
   dispatch: PropTypes.func.isRequired,
-  // questionIndex: PropTypes.number.isRequired,
-  // questions: PropTypes.arrayOf.isRequired,
 };
 
 export default connect()(Game);

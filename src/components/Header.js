@@ -8,9 +8,7 @@ import logo from '../trivia.png';
 class Header extends Component {
   render() {
     const { name, gravatarEmail, score } = this.props;
-    // console.log(email);
     const emailGravatar = md5(gravatarEmail).toString();
-    // console.log(emailGravatar);
     return (
       <div>
         <header>
@@ -39,13 +37,7 @@ Header.propTypes = {
 const mapStateToProps = (state) => {
   const { player } = state;
   const { name, gravatarEmail, score } = player;
-  console.log(player);
   return { name, gravatarEmail, score };
 };
-// ({
-  // name: state.player.name,
-  // gravatarEmail: state.player.gravatarEmail,
-  // score: state.player.score,
-// });
 
 export default connect(mapStateToProps)(Header);
